@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Class Support</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    <div class="brand">
+      <span class="brand-logo">C</span>
+      <span class="brand-name">Class Support</span>
+    </div>
+    <div class="topbar-class" id="topbarClass">No roster yet</div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar">
+      <a href="#home" class="nav-item" data-view="home"><span class="nav-icon">⌂</span>Home</a>
+      <a href="#roster" class="nav-item" data-view="roster"><span class="nav-icon">☷</span>Roster<span class="badge" id="navCount">0</span></a>
+      <div class="nav-section">Tools</div>
+      <a href="#groups" class="nav-item" data-view="groups"><span class="nav-icon">⚃</span>Group maker</a>
+      <a href="#picker" class="nav-item" data-view="picker"><span class="nav-icon">◎</span>Random picker</a>
+    </nav>
+
+    <main class="content">
+      <!-- HOME -->
+      <section class="view" id="view-home">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Welcome back</p>
+            <h1>Class overview</h1>
+          </div>
+        </div>
+        <div class="card stats">
+          <div class="stat"><span class="stat-label">Students</span><span class="stat-value" id="statStudents">0</span></div>
+          <div class="stat"><span class="stat-label">Groups made</span><span class="stat-value" id="statGroups">0</span></div>
+          <div class="stat"><span class="stat-label">Picks today</span><span class="stat-value" id="statPicks">0</span></div>
+          <div class="stat"><span class="stat-label">Not yet picked</span><span class="stat-value" id="statRemaining">0</span></div>
+        </div>
+        <div class="tiles">
+          <a class="card tile" href="#roster">
+            <p class="muted small">Step 1</p>
+            <h2>Set up your roster</h2>
+            <p class="muted">Paste student names once — every tool uses the same list.</p>
+            <span class="pill-btn">Edit roster</span>
+          </a>
+          <a class="card tile" href="#groups">
+            <p class="muted small">Teamwork</p>
+            <h2>Make random groups</h2>
+            <p class="muted">Choose a group size and shuffle students into balanced groups.</p>
+            <span class="pill-btn">Make groups</span>
+          </a>
+          <a class="card tile" href="#picker">
+            <p class="muted small">Participation</p>
+            <h2>Pick a student</h2>
+            <p class="muted">Randomly call on someone, with an option to avoid repeats.</p>
+            <span class="pill-btn">Pick now</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ROSTER -->
+      <section class="view" id="view-roster">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Students</p>
+            <h1>Roster</h1>
+          </div>
+        </div>
+        <div class="card">
+          <label class="field-label" for="className">Class name</label>
+          <input id="className" class="input" type="text" placeholder="e.g. Intro to Psychology – Section 2">
+          <label class="field-label" for="rosterInput">Student names <span class="muted">(one per line, or separated by commas)</span></label>
+          <textarea id="rosterInput" class="input textarea" rows="12" placeholder="Alex Kim&#10;Jordan Lee&#10;Sam Patel&#10;..."></textarea>
+          <div class="row">
+            <span class="muted" id="rosterCount">0 students</span>
+            <div class="row-gap">
+              <button class="btn" id="sampleBtn">Load sample names</button>
+              <button class="btn" id="clearRosterBtn">Clear</button>
+              <button class="btn primary" id="saveRosterBtn">Save roster</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GROUPS -->
+      <section class="view" id="view-groups">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Teamwork</p>
+            <h1>Random group maker</h1>
+          </div>
+        </div>
+        <div class="card">
+          <label class="field-label" for="groupNames">Student names <span class="muted">(uses your roster — edit here for a one-off)</span></label>
+          <textarea id="groupNames" class="input textarea" rows="7"></textarea>
+          <div class="controls">
+            <div>
+              <label class="field-label" for="groupMode">Split by</label>
+              <select id="groupMode" class="input">
+                <option value="size">Members per group</option>
+                <option value="count">Number of groups</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="groupValue" id="groupValueLabel">Members per group</label>
+              <input id="groupValue" class="input" type="number" min="1" value="4">
+            </div>
+            <div class="controls-actions">
+              <button class="btn primary" id="makeGroupsBtn">Make groups</button>
+              <button class="btn" id="copyGroupsBtn" disabled>Copy</button>
+            </div>
+          </div>
+          <p class="hint" id="groupHint"></p>
+        </div>
+        <div class="groups-grid" id="groupsOut"></div>
+      </section>
+
+      <!-- PICKER -->
+      <section class="view" id="view-picker">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Participation</p>
+            <h1>Random picker</h1>
+          </div>
+        </div>
+        <div class="picker-layout">
+          <div class="card picker-card">
+            <div class="picker-display" id="pickerDisplay">
+              <span class="picker-name" id="pickerName">Ready?</span>
+            </div>
+            <div class="row center">
+              <label class="check"><input type="checkbox" id="noRepeat" checked> Don't repeat until everyone is picked</label>
+            </div>
+            <div class="row center row-gap">
+              <button class="btn primary big" id="pickBtn">Pick a student</button>
+              <button class="btn" id="resetPickBtn">Reset</button>
+            </div>
+            <p class="hint center-text" id="pickerHint"></p>
+          </div>
+          <div class="card">
+            <div class="row"><h2>History</h2><span class="muted small" id="remainingLabel"></span></div>
+            <ol class="history" id="history" reversed></ol>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
