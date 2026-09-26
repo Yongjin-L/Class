@@ -52,6 +52,7 @@
     $('sidebar').classList.remove('open');
     if (target === 'groups' && !$('groupNames').value.trim()) $('groupNames').value = state.roster.join('\n');
     refresh();
+    if (target === 'picker') { sizeCanvas(); loadWheel(); }
   }
   window.addEventListener('hashchange', route);
   $('menuBtn').addEventListener('click', () => $('sidebar').classList.toggle('open'));
@@ -60,6 +61,7 @@
     const n = state.roster.length;
     $('navCount').textContent = n;
     $('topbarClass').textContent = state.className || (n ? `${n} students` : 'No roster yet');
+    $('heroTitle').textContent = state.className ? `Welcome to ${state.className}` : 'Welcome to Class Support';
     $('statStudents').textContent = n;
     $('statGroups').textContent = state.groupsMade;
     $('statPicks').textContent = state.picks.length;
@@ -86,6 +88,7 @@
     $('groupNames').value = state.roster.join('\n');
     save();
     refresh();
+    loadWheel();
     toast(`Roster saved · ${state.roster.length} students`);
   });
 
@@ -135,64 +138,190 @@
     catch { toast('Copy failed — select and copy manually'); }
   });
 
-  // ---------- Random picker ----------
+  // ---------- Spin the wheel ----------
+  const WHEEL_COLORS = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#2dd4bf', '#60a5fa', '#818cf8', '#c084fc', '#f472b6'];
+  const TAU = Math.PI * 2;
+  const canvas = $('wheel');
+  const ctx = canvas.getContext('2d');
+  let wheelNames = [];   // segments currently drawn
+  let rotation = 0;      // radians; segment i sits under the pointer when -rotation falls in its slice
+  let spinning = false;
+  let highlight = -1;
+
   function pickPool() {
     if (!$('noRepeat').checked) return state.roster.slice();
     return state.roster.filter((n) => !state.pickedPool.includes(n));
   }
   function renderHistory() {
     $('history').innerHTML = state.picks.slice().reverse().map((p) => `<li>${esc(p)}</li>`).join('');
-    $('remainingLabel').textContent = state.roster.length ? `${pickPool().length} left` : '';
+    $('remainingLabel').textContent = state.roster.length ? `${pickPool().length} left on wheel` : '';
   }
 
-  let rolling = false;
-  $('pickBtn').addEventListener('click', () => {
-    if (rolling) return;
-    if (!state.roster.length) { $('pickerHint').innerHTML = 'Your roster is empty — <a href="#roster"><u>add students</u></a>.'; return; }
-    let pool = pickPool();
-    if (!pool.length) {
-      state.pickedPool = [];
-      pool = pickPool();
-      toast('Everyone has been picked — starting a new round');
+  function segColor(i, n) {
+    let c = i % WHEEL_COLORS.length;
+    // Avoid the last slice matching the first one where the wheel wraps around.
+    if (i === n - 1 && n > 1 && c === 0) c = 2;
+    return WHEEL_COLORS[c];
+  }
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const css = canvas.clientWidth || 440;
+    canvas.width = canvas.height = Math.round(css * dpr);
+  }
+
+  function drawWheel() {
+    const size = canvas.width;
+    const r = size / 2;
+    const n = wheelNames.length;
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(r, r);
+
+    if (!n) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r - 4, 0, TAU);
+      ctx.fillStyle = '#d4d4d4';
+      ctx.fill();
+      ctx.restore();
+      return;
     }
+
+    const slice = TAU / n;
+    ctx.rotate(rotation - Math.PI / 2); // angle 0 points at the pointer (top)
+    for (let i = 0; i < n; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r - 4, i * slice, (i + 1) * slice);
+      ctx.closePath();
+      ctx.fillStyle = segColor(i, n);
+      ctx.globalAlpha = highlight === -1 || highlight === i ? 1 : 0.35;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      if (n > 1) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = size / 220; ctx.stroke(); }
+
+      // Name along the middle of the slice
+      ctx.save();
+      ctx.rotate((i + 0.5) * slice);
+      const fontPx = Math.max(size / 48, Math.min(size / 20, (slice * r) * 0.45));
+      ctx.font = `600 ${fontPx}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+      ctx.fillStyle = '#1f1f1f';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      let label = wheelNames[i];
+      const maxW = r * 0.66;
+      while (ctx.measureText(label).width > maxW && label.length > 3) label = label.slice(0, -2) + '…';
+      ctx.fillText(label, r - size / 28, 0);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(r, r, r - 4, 0, TAU);
+    ctx.lineWidth = size / 70;
+    ctx.strokeStyle = '#fff';
+    ctx.stroke();
+  }
+
+  function loadWheel() {
+    if (spinning) return;
+    const pool = pickPool();
+    wheelNames = pool.length ? shuffle(pool) : [];
+    highlight = -1;
+    drawWheel();
+    if (!state.roster.length) {
+      $('winnerLabel').innerHTML = 'Your roster is empty. <a href="#roster"><u>Add students</u></a> to fill the wheel.';
+      $('winnerName').textContent = '';
+    }
+  }
+
+  function confetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = WHEEL_COLORS[i % WHEEL_COLORS.length];
+      c.style.animationDuration = 1.6 + Math.random() * 1.6 + 's';
+      c.style.animationDelay = Math.random() * 0.3 + 's';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3800);
+    }
+  }
+
+  function spin() {
+    if (spinning) return;
+    if (!state.roster.length) { loadWheel(); return; }
+    if (!pickPool().length) {
+      // New round, but don't let the student just picked come up again straight away.
+      const last = state.picks[state.picks.length - 1];
+      state.pickedPool = state.roster.length > 1 && state.roster.includes(last) ? [last] : [];
+      toast('Everyone has had a turn. Starting a new round!');
+    }
+    loadWheel();
+
+    const n = wheelNames.length;
+    const slice = TAU / n;
+    const target = Math.floor(Math.random() * n);
+    // Land somewhere inside the target slice (not exactly on its edge).
+    const offset = (target + 0.5 + (Math.random() - 0.5) * 0.7) * slice;
+    const current = ((rotation % TAU) + TAU) % TAU;
+    const desired = ((TAU - offset) % TAU + TAU) % TAU;
+    const extraTurns = 5 + Math.floor(Math.random() * 3);
+    const start = rotation;
+    const delta = extraTurns * TAU + ((desired - current + TAU) % TAU);
+    const duration = 4200 + Math.random() * 1200;
+    const t0 = performance.now();
+
+    spinning = true;
+    $('pickBtn').disabled = $('hubBtn').disabled = true;
+    $('winnerLabel').textContent = 'Spinning…';
+    $('winnerName').textContent = '';
+    $('winnerName').classList.remove('pop');
     $('pickerHint').textContent = '';
-    const winner = pool[Math.floor(Math.random() * pool.length)];
-    const nameEl = $('pickerName');
-    rolling = true;
-    $('pickBtn').disabled = true;
-    nameEl.className = 'picker-name rolling';
 
-    // Slow down gradually, like a spinning wheel.
-    let delay = 40;
-    const tick = () => {
-      if (delay < 320) {
-        nameEl.textContent = state.roster[Math.floor(Math.random() * state.roster.length)];
-        delay *= 1.15;
-        setTimeout(tick, delay);
-      } else {
-        nameEl.textContent = winner;
-        nameEl.className = 'picker-name winner';
-        state.picks.push(winner);
-        if (!state.pickedPool.includes(winner)) state.pickedPool.push(winner);
-        save();
-        refresh();
-        rolling = false;
-        $('pickBtn').disabled = false;
-      }
+    const frame = (now) => {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - t, 4); // ease-out quart
+      rotation = start + delta * eased;
+      drawWheel();
+      if (t < 1) { requestAnimationFrame(frame); return; }
+
+      const winner = wheelNames[target];
+      highlight = target;
+      drawWheel();
+      $('winnerLabel').textContent = 'You’re up!';
+      $('winnerName').textContent = winner;
+      void $('winnerName').offsetWidth;
+      $('winnerName').classList.add('pop');
+      confetti();
+      state.picks.push(winner);
+      if (!state.pickedPool.includes(winner)) state.pickedPool.push(winner);
+      save();
+      spinning = false;
+      $('pickBtn').disabled = $('hubBtn').disabled = false;
+      refresh(); // wheel keeps showing the winner until the next spin
     };
-    tick();
-  });
+    requestAnimationFrame(frame);
+  }
 
+  $('pickBtn').addEventListener('click', spin);
+  $('hubBtn').addEventListener('click', spin);
   $('resetPickBtn').addEventListener('click', () => {
+    if (spinning) return;
     state.picks = [];
     state.pickedPool = [];
-    $('pickerName').textContent = 'Ready?';
-    $('pickerName').className = 'picker-name';
     save();
+    $('winnerLabel').textContent = 'Press spin to pick a student';
+    $('winnerName').textContent = '';
     refresh();
+    loadWheel();
   });
-  $('noRepeat').addEventListener('change', refresh);
+  $('noRepeat').addEventListener('change', () => { refresh(); loadWheel(); });
+  window.addEventListener('resize', () => { sizeCanvas(); drawWheel(); });
 
+  $('heroDate').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   syncGroupLabel();
   route();
 })();

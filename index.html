@@ -4,60 +4,109 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Class Support</title>
+  <meta name="description" content="Class Support: random group maker and spin-the-wheel student picker for teachers.">
+  <meta name="author" content="Yongjin Lee">
+  <meta name="theme-color" content="#1a1a1a">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Reusable icons -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5z"/><circle cx="17" cy="9" r="2.8"/><path d="M16.5 14.2c2.7.1 4.6 1.8 5 4.8h-4.2c-.2-1.9-.5-3.4-.8-4.8z"/></symbol>
+    <symbol id="i-groups" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>
+    <symbol id="i-wheel" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20a10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16a8 8 0 0 0 0-16z"/><path d="M12 12V5.5a6.5 6.5 0 0 1 5.63 3.25zM12 12l5.63 3.25A6.5 6.5 0 0 1 12 18.5zM12 12l-5.63 3.25a6.5 6.5 0 0 1 0-6.5z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14zM5 5h6v2H5v12h12v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></symbol>
+  </svg>
+
   <header class="topbar">
     <button class="icon-btn menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
-    <div class="brand">
-      <span class="brand-logo">C</span>
+    <a class="brand" href="#home">
+      <img class="brand-logo" src="favicon.svg" alt="" width="30" height="30">
       <span class="brand-name">Class Support</span>
-    </div>
+      <span class="brand-tag">for teachers</span>
+    </a>
     <div class="topbar-class" id="topbarClass">No roster yet</div>
   </header>
 
   <div class="layout">
     <nav class="sidebar" id="sidebar">
-      <a href="#home" class="nav-item" data-view="home"><span class="nav-icon">⌂</span>Home</a>
-      <a href="#roster" class="nav-item" data-view="roster"><span class="nav-icon">☷</span>Roster<span class="badge" id="navCount">0</span></a>
-      <div class="nav-section">Tools</div>
-      <a href="#groups" class="nav-item" data-view="groups"><span class="nav-icon">⚃</span>Group maker</a>
-      <a href="#picker" class="nav-item" data-view="picker"><span class="nav-icon">◎</span>Random picker</a>
+      <div class="nav-links">
+        <a href="#home" class="nav-item" data-view="home"><svg class="nav-icon"><use href="#i-home"/></svg>Home</a>
+        <a href="#roster" class="nav-item" data-view="roster"><svg class="nav-icon"><use href="#i-users"/></svg>Roster<span class="badge" id="navCount">0</span></a>
+        <div class="nav-section">Tools</div>
+        <a href="#groups" class="nav-item" data-view="groups"><svg class="nav-icon"><use href="#i-groups"/></svg>Group maker</a>
+        <a href="#picker" class="nav-item" data-view="picker"><svg class="nav-icon"><use href="#i-wheel"/></svg>Spin the wheel</a>
+      </div>
+      <a class="dev-card" href="https://yongjin.info" target="_blank" rel="noopener">
+        <span class="dev-avatar">YL</span>
+        <span class="dev-text">
+          <span class="dev-label">Developed by</span>
+          <span class="dev-name">Yongjin Lee</span>
+          <span class="dev-site">yongjin.info <svg class="dev-link-icon"><use href="#i-link"/></svg></span>
+        </span>
+      </a>
     </nav>
 
     <main class="content">
       <!-- HOME -->
       <section class="view" id="view-home">
-        <div class="page-head">
-          <div>
-            <p class="eyebrow">Welcome back</p>
-            <h1>Class overview</h1>
+        <div class="hero">
+          <div class="hero-text">
+            <p class="hero-date" id="heroDate"></p>
+            <h1 id="heroTitle">Welcome to Class Support</h1>
+            <p class="hero-sub">Make fair groups and call on students with a spin, all in one place.</p>
+            <div class="hero-actions">
+              <a class="btn light" href="#picker">Spin the wheel</a>
+              <a class="btn ghost" href="#groups">Make groups</a>
+            </div>
           </div>
+          <svg class="hero-art" viewBox="0 0 200 200" aria-hidden="true">
+            <g class="hero-spin"><g transform="translate(100 100)">
+              <path d="M0 0 L0 -80 A80 80 0 0 1 69.3 -40Z" fill="#fde047"/>
+              <path d="M0 0 L69.3 -40 A80 80 0 0 1 69.3 40Z" fill="#fb7185"/>
+              <path d="M0 0 L69.3 40 A80 80 0 0 1 0 80Z" fill="#60a5fa"/>
+              <path d="M0 0 L0 80 A80 80 0 0 1 -69.3 40Z" fill="#34d399"/>
+              <path d="M0 0 L-69.3 40 A80 80 0 0 1 -69.3 -40Z" fill="#a78bfa"/>
+              <path d="M0 0 L-69.3 -40 A80 80 0 0 1 0 -80Z" fill="#fb923c"/>
+              <circle r="80" fill="none" stroke="#fff" stroke-width="5"/>
+              <circle r="12" fill="#fff"/>
+            </g></g>
+            <path d="M89 4h22l-11 20z" fill="#fff"/>
+          </svg>
         </div>
+
         <div class="card stats">
           <div class="stat"><span class="stat-label">Students</span><span class="stat-value" id="statStudents">0</span></div>
           <div class="stat"><span class="stat-label">Groups made</span><span class="stat-value" id="statGroups">0</span></div>
-          <div class="stat"><span class="stat-label">Picks today</span><span class="stat-value" id="statPicks">0</span></div>
-          <div class="stat"><span class="stat-label">Not yet picked</span><span class="stat-value" id="statRemaining">0</span></div>
+          <div class="stat"><span class="stat-label">Spins today</span><span class="stat-value" id="statPicks">0</span></div>
+          <div class="stat"><span class="stat-label">Left on wheel</span><span class="stat-value" id="statRemaining">0</span></div>
         </div>
+
         <div class="tiles">
           <a class="card tile" href="#roster">
+            <span class="tile-icon" style="--c:#2563eb"><svg><use href="#i-users"/></svg></span>
             <p class="muted small">Step 1</p>
             <h2>Set up your roster</h2>
-            <p class="muted">Paste student names once — every tool uses the same list.</p>
+            <p class="muted">Paste student names once. Every tool uses the same list.</p>
             <span class="pill-btn">Edit roster</span>
           </a>
           <a class="card tile" href="#groups">
+            <span class="tile-icon" style="--c:#059669"><svg><use href="#i-groups"/></svg></span>
             <p class="muted small">Teamwork</p>
             <h2>Make random groups</h2>
-            <p class="muted">Choose a group size and shuffle students into balanced groups.</p>
+            <p class="muted">Pick a group size and shuffle students into balanced groups.</p>
             <span class="pill-btn">Make groups</span>
           </a>
           <a class="card tile" href="#picker">
+            <span class="tile-icon" style="--c:#db2777"><svg><use href="#i-wheel"/></svg></span>
             <p class="muted small">Participation</p>
-            <h2>Pick a student</h2>
-            <p class="muted">Randomly call on someone, with an option to avoid repeats.</p>
-            <span class="pill-btn">Pick now</span>
+            <h2>Spin the wheel</h2>
+            <p class="muted">Spin to call on a student, with an option to avoid repeats.</p>
+            <span class="pill-btn">Spin now</span>
           </a>
         </div>
       </section>
@@ -72,7 +121,7 @@
         </div>
         <div class="card">
           <label class="field-label" for="className">Class name</label>
-          <input id="className" class="input" type="text" placeholder="e.g. Intro to Psychology – Section 2">
+          <input id="className" class="input" type="text" placeholder="e.g. Intro to Psychology, Section 2">
           <label class="field-label" for="rosterInput">Student names <span class="muted">(one per line, or separated by commas)</span></label>
           <textarea id="rosterInput" class="input textarea" rows="12" placeholder="Alex Kim&#10;Jordan Lee&#10;Sam Patel&#10;..."></textarea>
           <div class="row">
@@ -95,7 +144,7 @@
           </div>
         </div>
         <div class="card">
-          <label class="field-label" for="groupNames">Student names <span class="muted">(uses your roster — edit here for a one-off)</span></label>
+          <label class="field-label" for="groupNames">Student names <span class="muted">(uses your roster; edit here for a one-off)</span></label>
           <textarea id="groupNames" class="input textarea" rows="7"></textarea>
           <div class="controls">
             <div>
@@ -124,29 +173,39 @@
         <div class="page-head">
           <div>
             <p class="eyebrow">Participation</p>
-            <h1>Random picker</h1>
+            <h1>Spin the wheel</h1>
           </div>
         </div>
         <div class="picker-layout">
           <div class="card picker-card">
-            <div class="picker-display" id="pickerDisplay">
-              <span class="picker-name" id="pickerName">Ready?</span>
+            <div class="wheel-wrap">
+              <div class="wheel-pointer" aria-hidden="true"></div>
+              <canvas id="wheel" width="440" height="440" aria-label="Student wheel"></canvas>
+              <button class="wheel-hub" id="hubBtn" aria-label="Spin">SPIN</button>
+            </div>
+            <div class="winner" id="winner" aria-live="polite">
+              <span class="winner-label" id="winnerLabel">Press spin to pick a student</span>
+              <span class="winner-name" id="winnerName"></span>
             </div>
             <div class="row center">
-              <label class="check"><input type="checkbox" id="noRepeat" checked> Don't repeat until everyone is picked</label>
+              <label class="check"><input type="checkbox" id="noRepeat" checked> Remove picked students until everyone has had a turn</label>
             </div>
             <div class="row center row-gap">
-              <button class="btn primary big" id="pickBtn">Pick a student</button>
+              <button class="btn primary big" id="pickBtn">Spin</button>
               <button class="btn" id="resetPickBtn">Reset</button>
             </div>
             <p class="hint center-text" id="pickerHint"></p>
           </div>
           <div class="card">
-            <div class="row"><h2>History</h2><span class="muted small" id="remainingLabel"></span></div>
+            <div class="row flush"><h2>History</h2><span class="muted small" id="remainingLabel"></span></div>
             <ol class="history" id="history" reversed></ol>
           </div>
         </div>
       </section>
+
+      <footer class="footer">
+        Class Support · Developed by <a href="https://yongjin.info" target="_blank" rel="noopener">Yongjin Lee</a>
+      </footer>
     </main>
   </div>
 
