@@ -44,7 +44,29 @@
   }
 
   // ---------- Navigation ----------
+  let fullPage = false;
+  function setFullPage(enabled) {
+    fullPage = enabled;
+    document.body.classList.toggle('full-page', enabled);
+    document.querySelectorAll('.full-page-btn').forEach((button) => {
+      button.textContent = enabled ? 'Exit full page' : 'Full page';
+      button.setAttribute('aria-pressed', String(enabled));
+    });
+    sizeCanvas();
+    drawWheel();
+  }
+  document.querySelectorAll('.full-page-btn').forEach((button) => {
+    button.addEventListener('click', () => setFullPage(!fullPage));
+  });
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && fullPage) {
+      setFullPage(false);
+      document.querySelector('.view.active .full-page-btn').focus();
+    }
+  });
   function route() {
+    if (fullPage) setFullPage(false);
+    cancelGroupAnimation();
     const view = (location.hash || '#home').slice(1);
     const target = $('view-' + view) ? view : 'home';
     document.querySelectorAll('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + target));
@@ -94,6 +116,22 @@
 
   // ---------- Group maker ----------
   let lastGroups = [];
+  let groupTimer;
+  let grouping = false;
+  function setGrouping(busy) {
+    grouping = busy;
+    ['makeGroupsBtn', 'groupNames', 'groupMode', 'groupValue'].forEach((id) => { $(id).disabled = busy; });
+    $('makeGroupsBtn').textContent = busy ? 'Shuffling…' : 'Make groups';
+    $('copyGroupsBtn').disabled = busy || !lastGroups.length;
+    $('groupsOut').setAttribute('aria-busy', String(busy));
+    $('groupShuffle').hidden = !busy;
+  }
+  function cancelGroupAnimation() {
+    if (!grouping) return;
+    clearTimeout(groupTimer);
+    setGrouping(false);
+    $('groupHint').textContent = 'Shuffle cancelled. Make groups to try again.';
+  }
   const syncGroupLabel = () => {
     $('groupValueLabel').textContent = $('groupMode').value === 'size' ? 'Members per group' : 'Number of groups';
   };
@@ -108,28 +146,46 @@
   }
 
   $('makeGroupsBtn').addEventListener('click', () => {
+    if (grouping) return;
     const names = parseNames($('groupNames').value);
     const value = parseInt($('groupValue').value, 10);
     const mode = $('groupMode').value;
     if (!names.length) { $('groupHint').textContent = 'Add some student names first.'; return; }
     if (!value || value < 1) { $('groupHint').textContent = 'Enter a number of 1 or more.'; return; }
 
-    lastGroups = makeGroups(names, mode, value);
-    const sizes = lastGroups.map((g) => g.length);
-    const uneven = Math.min(...sizes) !== Math.max(...sizes);
-    $('groupHint').textContent = `${names.length} students → ${lastGroups.length} group${lastGroups.length === 1 ? '' : 's'}` +
-      (uneven ? ` (sizes ${Math.min(...sizes)}–${Math.max(...sizes)}, balanced as evenly as possible)` : ` of ${sizes[0]}`);
+    const result = makeGroups(names, mode, value);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reveal = () => {
+      lastGroups = result;
+      const sizes = lastGroups.map((g) => g.length);
+      const uneven = Math.min(...sizes) !== Math.max(...sizes);
+      $('groupHint').textContent = `${names.length} students → ${lastGroups.length} group${lastGroups.length === 1 ? '' : 's'}` +
+        (uneven ? ` (sizes ${Math.min(...sizes)}–${Math.max(...sizes)}, balanced as evenly as possible)` : ` of ${sizes[0]}`);
 
-    $('groupsOut').innerHTML = lastGroups.map((g, i) => `
-      <div class="group" style="animation-delay:${i * 40}ms">
-        <h3><span><span class="group-dot" style="background:${COLORS[i % COLORS.length]}"></span>Group ${i + 1}</span>
-        <span class="muted small">${g.length}</span></h3>
-        <ul>${g.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
-      </div>`).join('');
-    $('copyGroupsBtn').disabled = false;
-    state.groupsMade += 1;
-    save();
-    refresh();
+      $('groupsOut').innerHTML = lastGroups.map((g, i) => `
+        <div class="group" style="animation-delay:${Math.min(i * 100, 900)}ms">
+          <h3><span><span class="group-dot" style="background:${COLORS[i % COLORS.length]}"></span>Group ${i + 1}</span>
+          <span class="muted small">${g.length}</span></h3>
+          <ul>${g.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
+        </div>`).join('');
+      setGrouping(false);
+      state.groupsMade += 1;
+      save();
+      refresh();
+    };
+    if (reducedMotion) { reveal(); return; }
+    lastGroups = [];
+    $('groupsOut').replaceChildren();
+    setGrouping(true);
+    $('groupHint').textContent = 'Shuffling students into balanced groups…';
+    const preview = shuffle(names);
+    let step = 0;
+    const tick = () => {
+      $('shuffleName').textContent = preview[step % preview.length];
+      step += 1;
+      groupTimer = setTimeout(step < 12 ? tick : reveal, 90 + step * 8);
+    };
+    tick();
   });
 
   $('copyGroupsBtn').addEventListener('click', async () => {
