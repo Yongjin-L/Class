@@ -9,6 +9,9 @@ A lightweight web app for running class activities. No build step or server need
 - **Spin the wheel** – a colorful name wheel that spins to pick a student. Optionally removes picked students until everyone has had a turn, with a pick history.
 - **Home** – quick overview of students, groups made, and today's picks.
 
+- **Full page** – expand any feature to fill the page; use Exit full page or Escape to return.
+- **Animated groups** – watch names shuffle before teams appear. Reduced-motion preferences skip the animation.
+
 ## Files
 
 - `index.html` – page structure

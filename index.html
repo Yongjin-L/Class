@@ -54,6 +54,7 @@
     <main class="content">
       <!-- HOME -->
       <section class="view" id="view-home">
+        <div class="page-head home-head"><h1>Home</h1><button class="btn full-page-btn" type="button" aria-pressed="false">Full page</button></div>
         <div class="hero">
           <div class="hero-text">
             <p class="hero-date" id="heroDate"></p>
@@ -118,6 +119,7 @@
             <p class="eyebrow">Students</p>
             <h1>Roster</h1>
           </div>
+          <button class="btn full-page-btn" type="button" aria-pressed="false">Full page</button>
         </div>
         <div class="card">
           <label class="field-label" for="className">Class name</label>
@@ -142,6 +144,7 @@
             <p class="eyebrow">Teamwork</p>
             <h1>Random group maker</h1>
           </div>
+          <button class="btn full-page-btn" type="button" aria-pressed="false">Full page</button>
         </div>
         <div class="card">
           <label class="field-label" for="groupNames">Student names <span class="muted">(uses your roster; edit here for a one-off)</span></label>
@@ -163,9 +166,14 @@
               <button class="btn" id="copyGroupsBtn" disabled>Copy</button>
             </div>
           </div>
-          <p class="hint" id="groupHint"></p>
+          <p class="hint" id="groupHint" role="status"></p>
         </div>
-        <div class="groups-grid" id="groupsOut"></div>
+        <div class="group-shuffle card" id="groupShuffle" hidden aria-hidden="true">
+          <span class="eyebrow">Finding your teams</span>
+          <div class="shuffle-name" id="shuffleName"></div>
+          <span class="muted">Shuffling students…</span>
+        </div>
+        <div class="groups-grid" id="groupsOut" aria-busy="false"></div>
       </section>
 
       <!-- PICKER -->
@@ -175,6 +183,7 @@
             <p class="eyebrow">Participation</p>
             <h1>Spin the wheel</h1>
           </div>
+          <button class="btn full-page-btn" type="button" aria-pressed="false">Full page</button>
         </div>
         <div class="picker-layout">
           <div class="card picker-card">
